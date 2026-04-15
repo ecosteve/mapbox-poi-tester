@@ -1,4 +1,10 @@
-if (typeof window !== "undefined" && typeof document !== "undefined") {
+(() => {
+if (typeof window === "undefined" || typeof document === "undefined") {
+  return;
+}
+
+const appConfig = globalThis.APP_CONFIG || {};
+
 const CATEGORY_COLOR_MAP = {
   hospital: "#d9485f",
   emergency_room: "#ef6b56",
@@ -21,7 +27,7 @@ const FALLBACK_CENTER = { lng: -122.4194, lat: 37.7749, label: "San Francisco fa
 const RESULTS_PER_CATEGORY = 10;
 
 const state = {
-  token: window.APP_CONFIG?.mapboxToken ?? "",
+  token: appConfig.mapboxToken ?? "",
   map: null,
   biasMarker: null,
   popup: null,
@@ -350,7 +356,7 @@ async function runCategorySearch() {
     createMap();
   }
 
-  const countryCodes = window.APP_CONFIG?.countryCodes || "NZ";
+  const countryCodes = appConfig.countryCodes || "NZ";
   let availableCategoryIds = null;
 
   try {
@@ -786,4 +792,4 @@ function emptyCollection() {
 }
 
 init();
-}
+})();
