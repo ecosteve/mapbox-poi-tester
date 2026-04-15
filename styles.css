@@ -45,7 +45,7 @@ input {
 
 .shell {
   display: grid;
-  grid-template-columns: minmax(320px, 400px) 1fr;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(420px, 1.4fr) minmax(300px, 1fr);
   gap: 18px;
   min-height: 100vh;
   padding: 18px;
@@ -67,6 +67,11 @@ input {
   gap: 14px;
   padding: 20px;
   overflow: auto;
+}
+
+.panel--categories,
+.panel--controls {
+  max-height: calc(100vh - 36px);
 }
 
 .panel__header h1,
@@ -106,6 +111,13 @@ input {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 250, 250, 0.92));
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+}
+
+.card--results {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .eyebrow {
@@ -230,6 +242,7 @@ input[type="range"] {
 .category-list {
   display: grid;
   gap: 10px;
+  align-content: start;
 }
 
 .category-card {
@@ -353,30 +366,8 @@ input[type="range"] {
 
 .map-stage {
   position: relative;
-  overflow: hidden;
   padding: 14px;
-}
-
-.floating-panel {
-  position: absolute;
-  z-index: 3;
-  top: 74px;
-  right: 24px;
-  width: min(380px, calc(100% - 48px));
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 24px 60px rgba(39, 70, 73, 0.18);
-  backdrop-filter: blur(18px);
-  max-height: calc(100vh - 120px);
-  overflow: auto;
-}
-
-.floating-results {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  overflow: hidden;
 }
 
 .map-stage__header {
@@ -387,13 +378,18 @@ input[type="range"] {
   right: 24px;
   display: flex;
   justify-content: space-between;
-  pointer-events: none;
 }
 
 .map-stage__title {
   margin: 4px 0 0;
   font-size: 0.92rem;
   font-weight: 600;
+}
+
+.card--map-header {
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(18px);
 }
 
 .map {
@@ -435,20 +431,13 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 
-  .panel {
-    max-height: none;
-  }
-
   .map {
     min-height: 58vh;
   }
 
-  .floating-panel {
-    position: relative;
-    top: auto;
-    right: auto;
-    width: 100%;
-    margin: 72px 0 12px;
+  .panel--categories,
+  .panel--controls {
+    max-height: none;
   }
 }
 
@@ -484,7 +473,7 @@ input[type="range"] {
     top: 18px;
   }
 
-  .floating-panel {
-    margin-top: 86px;
+  .card--map-header {
+    max-width: none;
   }
 }

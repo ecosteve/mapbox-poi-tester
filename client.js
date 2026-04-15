@@ -13,15 +13,25 @@ const CATEGORY_COLOR_MAP = {
   clinic: "#6f73d2",
   medical_center: "#4f9e8a",
   pharmacy: "#208f7d",
+  dentist: "#d36b7b",
+  physiotherapist: "#5e9c67",
+  health_services: "#5c7dd1",
+  mental_health: "#8a63c7",
+  laboratory: "#a36a45",
 };
 const DEFAULT_CATEGORIES = [
   { id: "hospital", label: "Hospital", selected: true },
   { id: "emergency_room", label: "Emergency room", selected: true },
-  { id: "urgent_care", label: "Urgent care", selected: true },
   { id: "doctor", label: "Doctor", selected: false },
-  { id: "clinic", label: "Clinic", selected: false },
   { id: "medical_center", label: "Medical center", selected: false },
+  { id: "clinic", label: "Clinic", selected: false },
+  { id: "urgent_care", label: "Urgent care", selected: true },
   { id: "pharmacy", label: "Pharmacy", selected: false },
+  { id: "dentist", label: "Dentist", selected: false },
+  { id: "physiotherapist", label: "Physiotherapist", selected: false },
+  { id: "health_services", label: "Health services", selected: false },
+  { id: "mental_health", label: "Mental health", selected: false },
+  { id: "laboratory", label: "Laboratory", selected: false },
 ];
 const FALLBACK_CENTER = { lng: -122.4194, lat: 37.7749, label: "San Francisco fallback" };
 const RESULTS_PER_CATEGORY = 10;
@@ -542,11 +552,16 @@ function resolveDefaultCategories(items) {
   const desiredDefaults = [
     { label: "Hospital", selected: true, terms: ["hospital", "medical center", "medical_centre"] },
     { label: "Emergency room", selected: true, terms: ["emergency room", "emergency", "er"] },
-    { label: "Urgent care", selected: true, terms: ["urgent care", "after hours"] },
     { label: "Doctor", selected: false, terms: ["doctor", "physician", "general practitioner", "gp"] },
-    { label: "Clinic", selected: false, terms: ["clinic"] },
     { label: "Medical center", selected: false, terms: ["medical center", "medical centre"] },
+    { label: "Clinic", selected: false, terms: ["clinic", "walk-in clinic", "walk in clinic"] },
+    { label: "Urgent care", selected: true, terms: ["urgent care", "after hours"] },
     { label: "Pharmacy", selected: false, terms: ["pharmacy", "chemist", "drugstore"] },
+    { label: "Dentist", selected: false, terms: ["dentist", "dental"] },
+    { label: "Physiotherapist", selected: false, terms: ["physiotherapist", "physical therapy", "physio"] },
+    { label: "Health services", selected: false, terms: ["health services", "healthcare", "health care"] },
+    { label: "Mental health", selected: false, terms: ["mental health", "behavioral health", "behavioural health"] },
+    { label: "Laboratory", selected: false, terms: ["laboratory", "lab", "pathology"] },
   ];
 
   const usedIds = new Set();

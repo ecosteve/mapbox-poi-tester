@@ -19,7 +19,7 @@
   </head>
   <body>
     <div class="shell">
-      <aside class="panel">
+      <aside class="panel panel--categories">
         <div class="panel__header">
           <p class="eyebrow">Mapbox Search Box API</p>
           <div class="brand-lockup">
@@ -49,14 +49,18 @@
         </section>
       </aside>
 
-      <main class="map-stage">
-        <div class="map-stage__header">
+      <main class="panel map-stage">
+        <div class="map-stage__header card card--map-header">
           <div>
             <p class="eyebrow eyebrow--muted">Interactive map</p>
             <p class="map-stage__title">Drag the base marker, run searches, inspect POIs.</p>
           </div>
         </div>
-        <section class="floating-panel">
+        <div id="map" class="map"></div>
+      </main>
+
+      <aside class="panel panel--controls">
+        <section class="card">
           <div class="section-heading">
             <div>
               <p class="eyebrow eyebrow--muted">Bias Point</p>
@@ -91,8 +95,9 @@
           <button id="search-btn" class="button button--primary button--wide" type="button">
             Search selected categories
           </button>
+        </section>
 
-          <div class="floating-results">
+        <section class="card card--results">
             <div class="section-heading">
               <div>
                 <p class="eyebrow eyebrow--muted">Results</p>
@@ -104,10 +109,8 @@
             <div id="status" class="status">Loading map configuration.</div>
             <div id="category-summary" class="summary"></div>
             <div id="results-list" class="results-list"></div>
-          </div>
         </section>
-        <div id="map" class="map"></div>
-      </main>
+      </aside>
     </div>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.js"></script>
