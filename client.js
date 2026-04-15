@@ -1,3 +1,4 @@
+if (typeof window !== "undefined" && typeof document !== "undefined") {
 const CATEGORY_COLOR_MAP = {
   hospital: "#d9485f",
   emergency_room: "#ef6b56",
@@ -785,3 +786,4 @@ function emptyCollection() {
 }
 
 init();
+}
