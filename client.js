@@ -455,7 +455,6 @@ async function fetchCategory(categoryId, options) {
     language: "en",
     limit: String(options.limit),
     proximity: options.proximity,
-    types: "poi",
   });
 
   if (options.country) {
