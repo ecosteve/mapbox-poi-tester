@@ -33,6 +33,7 @@ const state = {
   popup: null,
   biasPoint: { ...FALLBACK_CENTER },
   categories: [...DEFAULT_CATEGORIES],
+  categoriesHydrated: false,
   results: [],
   availableCategoryIds: null,
 };
@@ -91,6 +92,9 @@ function initializeToken() {
   }
 
   setStatus("Map ready. You can reposition the bias marker and run a search.");
+  hydrateCategoriesFromCatalog().catch(() => {
+    // Keep the seeded defaults if the catalog request fails.
+  });
 }
 
 function createMap() {
@@ -340,12 +344,24 @@ function getSelectedCategories() {
 }
 
 async function runCategorySearch() {
-  const selectedCategories = getSelectedCategories();
-
   if (!state.token) {
     setStatus("Add a Mapbox token before running searches.", "error");
     return;
   }
+
+  if (!state.categoriesHydrated) {
+    try {
+      await hydrateCategoriesFromCatalog();
+    } catch (error) {
+      setStatus(
+        `Unable to load Mapbox category catalog. ${formatUnknownError(error, "Check token permissions.")}`,
+        "error"
+      );
+      return;
+    }
+  }
+
+  const selectedCategories = getSelectedCategories();
 
   if (!selectedCategories.length) {
     setStatus("Select at least one category to search.", "error");
@@ -475,8 +491,90 @@ async function fetchAvailableCategoryIds() {
     throw new Error(formatApiError(data, response, "Unable to load categories."));
   }
 
-  state.availableCategoryIds = new Set((data.list_items || []).map((item) => item.canonical_id).filter(Boolean));
+  const items = getCategoryListItems(data);
+  state.availableCategoryIds = new Set(items.map((item) => item.canonical_id).filter(Boolean));
   return state.availableCategoryIds;
+}
+
+async function hydrateCategoriesFromCatalog() {
+  const params = new URLSearchParams({
+    access_token: state.token,
+    language: "en",
+  });
+
+  const response = await fetch(`https://api.mapbox.com/search/searchbox/v1/list/category?${params.toString()}`);
+  const data = await readResponseBody(response);
+
+  if (!response.ok) {
+    throw new Error(formatApiError(data, response, "Unable to load categories."));
+  }
+
+  const items = getCategoryListItems(data);
+  state.availableCategoryIds = new Set(items.map((item) => item.canonical_id).filter(Boolean));
+
+  const resolvedDefaults = resolveDefaultCategories(items);
+  if (resolvedDefaults.length) {
+    state.categories = resolvedDefaults;
+    renderCategories();
+  }
+
+  state.categoriesHydrated = true;
+}
+
+function getCategoryListItems(data) {
+  if (Array.isArray(data?.list_items)) {
+    return data.list_items;
+  }
+
+  if (Array.isArray(data?.listItems)) {
+    return data.listItems;
+  }
+
+  return [];
+}
+
+function resolveDefaultCategories(items) {
+  const catalog = items.map((item) => ({
+    id: item.canonical_id,
+    label: item.name || formatCategoryLabel(item.canonical_id || ""),
+    searchText: `${item.canonical_id || ""} ${item.name || ""}`.toLowerCase(),
+  }));
+
+  const desiredDefaults = [
+    { label: "Hospital", selected: true, terms: ["hospital", "medical center", "medical_centre"] },
+    { label: "Emergency room", selected: true, terms: ["emergency room", "emergency", "er"] },
+    { label: "Urgent care", selected: true, terms: ["urgent care", "after hours"] },
+    { label: "Doctor", selected: false, terms: ["doctor", "physician", "general practitioner", "gp"] },
+    { label: "Clinic", selected: false, terms: ["clinic"] },
+    { label: "Medical center", selected: false, terms: ["medical center", "medical centre"] },
+    { label: "Pharmacy", selected: false, terms: ["pharmacy", "chemist", "drugstore"] },
+  ];
+
+  const usedIds = new Set();
+  const resolved = [];
+
+  desiredDefaults.forEach((desired) => {
+    const match = catalog.find((item) => {
+      if (!item.id || usedIds.has(item.id)) {
+        return false;
+      }
+
+      return desired.terms.some((term) => item.searchText.includes(term));
+    });
+
+    if (!match) {
+      return;
+    }
+
+    usedIds.add(match.id);
+    resolved.push({
+      id: match.id,
+      label: desired.label,
+      selected: desired.selected,
+    });
+  });
+
+  return resolved;
 }
 
 async function readResponseBody(response) {
