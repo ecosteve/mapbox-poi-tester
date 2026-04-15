@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical POI Finder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="/config.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="panel">
+        <div class="panel__header">
+          <p class="eyebrow">Mapbox Search Box API</p>
+          <div class="brand-lockup">
+            <img
+              class="brand-lockup__logo"
+              src="./ecoportal-logo.png"
+              alt="EcoPortal logo"
+            />
+            <h1>Medical POI Finder</h1>
+          </div>
+          <p class="lede">
+            Compare category behavior around a chosen bias point and review
+            nearby hospitals, urgent care, emergency rooms, and related POIs.
+          </p>
+        </div>
+
+        <section class="card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow eyebrow--muted">Categories</p>
+              <h2>Categories</h2>
+            </div>
+            <span id="selected-count" class="pill">0 selected</span>
+          </div>
+
+          <div id="category-list" class="category-list"></div>
+        </section>
+      </aside>
+
+      <main class="map-stage">
+        <div class="map-stage__header">
+          <div>
+            <p class="eyebrow eyebrow--muted">Interactive map</p>
+            <p class="map-stage__title">Drag the base marker, run searches, inspect POIs.</p>
+          </div>
+        </div>
+        <section class="floating-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow eyebrow--muted">Bias Point</p>
+              <h2>Starting location</h2>
+            </div>
+            <button id="locate-btn" class="button button--secondary" type="button">
+              Use current
+            </button>
+          </div>
+
+          <label class="field">
+            <span>Search for a place</span>
+            <div class="inline-field">
+              <input
+                id="location-input"
+                type="text"
+                placeholder="City, address, or landmark"
+                autocomplete="off"
+              />
+              <button id="location-search-btn" class="button" type="button">
+                Go
+              </button>
+            </div>
+          </label>
+
+          <div class="micro-actions">
+            <p id="bias-summary" class="hint">
+              Drag the map marker or click on the map to move the bias point.
+            </p>
+          </div>
+
+          <button id="search-btn" class="button button--primary button--wide" type="button">
+            Search selected categories
+          </button>
+
+          <div class="floating-results">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow eyebrow--muted">Results</p>
+                <h2>Nearby medical places</h2>
+              </div>
+              <span id="results-count" class="pill pill--soft">0 shown</span>
+            </div>
+
+            <div id="status" class="status">Loading map configuration.</div>
+            <div id="category-summary" class="summary"></div>
+            <div id="results-list" class="results-list"></div>
+          </div>
+        </section>
+        <div id="map" class="map"></div>
+      </main>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
