@@ -52,12 +52,10 @@ const elements = {
   locationInput: document.querySelector("#location-input"),
   locationSearchBtn: document.querySelector("#location-search-btn"),
   locateBtn: document.querySelector("#locate-btn"),
-  biasSummary: document.querySelector("#bias-summary"),
   categoryList: document.querySelector("#category-list"),
   selectedCount: document.querySelector("#selected-count"),
   searchBtn: document.querySelector("#search-btn"),
   status: document.querySelector("#status"),
-  categorySummary: document.querySelector("#category-summary"),
   resultsCount: document.querySelector("#results-count"),
   resultsList: document.querySelector("#results-list"),
 };
@@ -86,7 +84,6 @@ function bindEvents() {
 }
 
 function hydrateForm() {
-  elements.biasSummary.textContent = "Drag the map marker or click on the map to move the bias point.";
 }
 
 function initializeToken() {
@@ -127,20 +124,22 @@ function createMap() {
     attachBiasMarker();
     updateMapResults(state.results);
 
-    state.map.on("mouseenter", "results-circles", () => {
-      state.map.getCanvas().style.cursor = "pointer";
-    });
+    ["results-circles", "results-labels"].forEach((layerId) => {
+      state.map.on("mouseenter", layerId, () => {
+        state.map.getCanvas().style.cursor = "pointer";
+      });
 
-    state.map.on("mouseleave", "results-circles", () => {
-      state.map.getCanvas().style.cursor = "";
-    });
+      state.map.on("mouseleave", layerId, () => {
+        state.map.getCanvas().style.cursor = "";
+      });
 
-    state.map.on("click", "results-circles", (event) => {
-      const feature = event.features?.[0];
-      if (!feature) {
-        return;
-      }
-      openPopup(feature);
+      state.map.on("click", layerId, (event) => {
+        const feature = event.features?.[0];
+        if (!feature) {
+          return;
+        }
+        openPopup(feature);
+      });
     });
   });
 
@@ -204,6 +203,40 @@ function ensureResultLayers() {
       },
     });
   }
+
+  if (!state.map.getLayer("results-labels")) {
+    state.map.addLayer({
+      id: "results-labels",
+      type: "symbol",
+      source: "results",
+      minzoom: 11,
+      layout: {
+        "text-field": ["coalesce", ["get", "name"], ""],
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          11,
+          10,
+          14,
+          11,
+          16,
+          12,
+        ],
+        "text-font": ["Open Sans SemiBold", "Arial Unicode MS Regular"],
+        "text-offset": [0, 1.1],
+        "text-anchor": "top",
+        "text-max-width": 14,
+        "text-optional": true,
+      },
+      paint: {
+        "text-color": "#123036",
+        "text-halo-color": "rgba(255, 255, 255, 0.9)",
+        "text-halo-width": 1.5,
+        "text-opacity": 0.88,
+      },
+    });
+  }
 }
 
 function buildCategoryColorExpression() {
@@ -245,8 +278,6 @@ function updateBiasPoint(lng, lat, message) {
     lng: Number(lng.toFixed(6)),
     lat: Number(lat.toFixed(6)),
   };
-
-  elements.biasSummary.textContent = `Bias point: ${state.biasPoint.lat}, ${state.biasPoint.lng}`;
 
   if (state.biasMarker) {
     state.biasMarker.setLngLat([state.biasPoint.lng, state.biasPoint.lat]);
@@ -389,13 +420,6 @@ async function runCategorySearch() {
     availableCategoryIds = await fetchAvailableCategoryIds();
   } catch (error) {
     setStatus(`Unable to load Mapbox category catalog. ${formatUnknownError(error, "Check token permissions.")}`, "error");
-    renderSummary(
-      selectedCategories.map((category) => ({
-        categoryId: category.id,
-        count: "Category catalog request failed",
-        tone: "error",
-      }))
-    );
     state.results = [];
     updateMapResults(state.results);
     renderResults();
@@ -418,11 +442,7 @@ async function runCategorySearch() {
   );
 
   const mergedFeatures = [];
-  const summary = unsupportedCategories.map((category) => ({
-    categoryId: category.id,
-    count: "Unsupported Mapbox category id",
-    tone: "error",
-  }));
+  const errors = unsupportedCategories.map((category) => `Unsupported Mapbox category id: ${category.id}`);
 
   results.forEach((result, index) => {
     const categoryId = supportedCategories[index].id;
@@ -430,16 +450,11 @@ async function runCategorySearch() {
     if (result.status === "fulfilled") {
       const features = result.value.features.map((feature) => decorateFeature(feature, categoryId));
       mergedFeatures.push(...features);
-      summary.push({ categoryId, count: features.length, tone: "default" });
       return;
     }
 
     const errorMessage = formatUnknownError(result.reason, `Request failed for ${categoryId}`);
-    summary.push({
-      categoryId,
-      count: errorMessage,
-      tone: "error",
-    });
+    errors.push(`${categoryId}: ${errorMessage}`);
   });
 
   state.results = dedupeFeatures(mergedFeatures).sort((left, right) => {
@@ -447,16 +462,17 @@ async function runCategorySearch() {
   });
 
   updateMapResults(state.results);
-  renderSummary(summary);
   renderResults();
 
-  const successCount = summary.filter((item) => item.tone !== "error").length;
-  const firstError = summary.find((item) => item.tone === "error");
-  const message =
-    successCount === 0
-      ? `All category lookups failed. ${firstError?.count || "Check category ids and token permissions."}`
-      : `Showing ${state.results.length} places across ${successCount} successful searches.`;
-  setStatus(message, successCount === 0 ? "error" : undefined);
+  if (state.results.length) {
+    setStatus("");
+    return;
+  }
+
+  const message = errors.length
+    ? `All category lookups failed. ${errors[0]}`
+    : "No places found for the selected categories.";
+  setStatus(message, "error");
 }
 
 async function fetchCategory(categoryId, options) {
@@ -743,21 +759,6 @@ function updateMapResults(features) {
   state.map.fitBounds(bounds, { padding: 80, duration: 700, maxZoom: 14 });
 }
 
-function renderSummary(summary) {
-  elements.categorySummary.innerHTML = "";
-
-  summary.forEach((item) => {
-    const chip = document.createElement("span");
-    chip.className = "summary-chip";
-    chip.dataset.tone = item.tone;
-    chip.textContent =
-      item.tone === "error"
-        ? `${item.categoryId}: ${item.count}`
-        : `${item.categoryId}: ${item.count} result${item.count === 1 ? "" : "s"}`;
-    elements.categorySummary.append(chip);
-  });
-}
-
 function renderResults() {
   elements.resultsList.innerHTML = "";
   elements.resultsCount.textContent = `${state.results.length} shown`;
@@ -833,6 +834,14 @@ function openPopup(feature) {
 }
 
 function setStatus(message, tone) {
+  if (!message) {
+    elements.status.hidden = true;
+    elements.status.textContent = "";
+    delete elements.status.dataset.tone;
+    return;
+  }
+
+  elements.status.hidden = false;
   elements.status.textContent = message;
   if (tone) {
     elements.status.dataset.tone = tone;

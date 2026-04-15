@@ -72,7 +72,6 @@
           </div>
 
           <label class="field">
-            <span>Search for a place</span>
             <div class="inline-field">
               <input
                 id="location-input"
@@ -86,29 +85,22 @@
             </div>
           </label>
 
-          <div class="micro-actions">
-            <p id="bias-summary" class="hint">
-              Drag the map marker or click on the map to move the bias point.
-            </p>
-          </div>
-
           <button id="search-btn" class="button button--primary button--wide" type="button">
             Search selected categories
           </button>
         </section>
 
         <section class="card card--results">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow eyebrow--muted">Results</p>
-                <h2>Nearby medical places</h2>
-              </div>
-              <span id="results-count" class="pill pill--soft">0 shown</span>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow eyebrow--muted">Results</p>
+              <h2>Nearby medical places</h2>
             </div>
+            <span id="results-count" class="pill pill--soft">0 shown</span>
+          </div>
 
-            <div id="status" class="status">Loading map configuration.</div>
-            <div id="category-summary" class="summary"></div>
-            <div id="results-list" class="results-list"></div>
+          <div id="status" class="status" hidden></div>
+          <div id="results-list" class="results-list"></div>
         </section>
       </aside>
     </div>
